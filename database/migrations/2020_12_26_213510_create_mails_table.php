@@ -14,8 +14,14 @@ class CreateMailsTable extends Migration
     public function up()
     {
         Schema::create('mails', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id('id');
+            $table->foreignId('id_user_from')->nullable();
+            $table->foreignId('id_user_to')->nullable();
+            $table->string('subject');
+            $table->text('message');
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('sent')->nullable();
+            $table->timestamp('created')->useCurrent();
         });
     }
 
