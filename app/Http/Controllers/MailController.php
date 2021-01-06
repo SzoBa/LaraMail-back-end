@@ -21,7 +21,7 @@ class MailController extends Controller
     public function index()
     {
         $mails =  Mail::all();
-        return response($mails);
+        return response($mails, 200);
     }
 
     /**
@@ -54,7 +54,7 @@ class MailController extends Controller
         if(is_null($mail)) {
             return response(['message'=>'Mail not found'], 404);
         }
-        return Mail::find($id);
+        return response(Mail::find($id), 200);
     }
 
     /**
