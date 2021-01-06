@@ -19,6 +19,8 @@ class Mail extends Model
 //    protected $casts = [
 //        'sent' => 'datetime',
 //    ];
+//if you want to change the type of the returned value
+
     protected $attributes = ['is_read' => false];
     protected $hidden = [
         'id',
