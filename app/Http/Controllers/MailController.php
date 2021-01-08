@@ -32,6 +32,7 @@ class MailController extends Controller
         $mails = DB::table('mails')->join('users', 'mails.id_user_from', '=', 'users.id')
             ->select('mails.*', 'users.name')
             ->where('mails.id_user_to', '=', $request->user()->id)
+            ->where('sent', '!=', null)
             ->get();
         return response($mails, 200);
     }
@@ -52,12 +53,12 @@ class MailController extends Controller
         }
         $destinationUser = User::where('name', $request->get('name'))->first();
         if ($destinationUser) {
-            Mail::create(['id_user_from' =>$request->user()->id,
+            $mail = Mail::create(['id_user_from' =>$request->user()->id,
                 'id_user_to' => $destinationUser->id,
                 'subject' => $request->get('subject'),
                 'message' => $request->get('message'),
             ]);
-            return response(['message'=> 'Send Successful!'], 201);
+            return response($mail, 201);
             //this could be with arrow function too, like ->json(data, status)
         }
         return response(['message'=> 'Username doesn\'t exist in database!'], 404);
@@ -93,8 +94,26 @@ class MailController extends Controller
         if (is_null($mail)) {
             return response(["message" =>"Id doesn't exist in database!"], 404);
         }
-        $mail->update($request->all());
-        return response($mail, 200);
+        $rules = ['id_user_to' => 'exists:users,id',
+            'subject' => 'string|min:3',
+            'message' => 'string|min:3',
+            'is_read' => 'boolean',
+            'sent' => 'boolean',
+            ];
+        $dataToUpdate = $request->all();
+        $validation = Validator::make($dataToUpdate, $rules);
+        if ($validation->fails()) {
+            return response($validation->errors(), 400);
+        }
+        $checkedUpdateValues = [];
+        foreach ($dataToUpdate as $key=>$value) {
+            if (array_key_exists($key, $rules)) {
+                //just test, but use server time to prevent security policy issues and timezone problems!!!
+                $key === 'sent' ? $checkedUpdateValues[$key] = now(): $checkedUpdateValues[$key] = $value;
+            }
+        }
+        $mail->update($checkedUpdateValues);
+        return response(["message" => "Transaction successful!"], 204);
     }
 
     /**
@@ -106,20 +125,28 @@ class MailController extends Controller
     public function destroy(int $id): Response
     {
         $deletedRows = Mail::destroy($id);
-        //number of deleted rows
         return $deletedRows === 0 ? response(["message"=>"No deletion executed!"], 404) :
             response(["message"=> "Record deleted!"], 204);
     }
 
     public function sent(Request $request): Response
     {
-
 //        Mail::all()->where('id_user_from', $request->user()->id)->sortByDesc('sent');
 //        $mails = Mail::with('user')->get();
         $mails = DB::table('mails')->join('users', 'mails.id_user_to', '=', 'users.id')
         ->select('mails.*', 'users.name')
         ->where('mails.id_user_from', '=', $request->user()->id)
+        ->where('sent', '!=', null)
         ->get();
+        return response($mails, 200);
+    }
+
+    public function draft(Request $request) {
+        $mails = DB::table('mails')->join('users', 'mails.id_user_to', '=', 'users.id')
+            ->select('mails.*', 'users.name')
+            ->where('mails.id_user_from', '=', $request->user()->id)
+            ->where('sent', '=', null)
+            ->get();
         return response($mails, 200);
     }
 }
