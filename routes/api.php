@@ -29,6 +29,9 @@ Route::apiResource('mail', MailController::class)
     ->middleware('auth:sanctum');
 //TODO insert force delete and list trashed mails, draft mails routes
 
+Route::get('/mail-sent', [MailController::class, 'sent'])
+    ->middleware('auth:sanctum');
+
 Route::post('/register', [RegisterUserController::class, 'store']);
 
 Route::post('/login', [LoginController::class, 'store']);
