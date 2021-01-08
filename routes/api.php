@@ -32,6 +32,9 @@ Route::apiResource('mail', MailController::class)
 Route::get('/mail-sent', [MailController::class, 'sent'])
     ->middleware('auth:sanctum');
 
+Route::get('/mail-draft', [MailController::class, 'draft'])
+    ->middleware('auth:sanctum');
+
 Route::post('/register', [RegisterUserController::class, 'store']);
 
 Route::post('/login', [LoginController::class, 'store']);
