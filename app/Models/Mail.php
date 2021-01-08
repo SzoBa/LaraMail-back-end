@@ -34,4 +34,8 @@ class Mail extends Model
 
     public $timestamps = false;
     //if you need to override built-in times
+
+    public function user() {
+        return $this->belongsTo(User::class, 'id_user_from', 'id');
+    }
 }
