@@ -22,6 +22,7 @@ class CreateMailsTable extends Migration
             $table->boolean('is_read')->default(false);
             $table->timestamp('sent')->nullable();
             $table->timestamp('created')->useCurrent();
+            $table->softDeletes();
         });
     }
 
