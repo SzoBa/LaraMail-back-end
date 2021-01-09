@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return response(User::all(['name']), 200);
     }
 
     /**
