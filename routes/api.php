@@ -30,8 +30,6 @@ use Illuminate\Support\Facades\Hash;
 Route::apiResource('mail', MailController::class)
     ->middleware('auth:sanctum');
 
-//TODO and mark as unread
-
 Route::delete('/mail/force-delete/{id}',[MailController::class, 'forceDelete'])
     ->middleware('auth:sanctum');
 
