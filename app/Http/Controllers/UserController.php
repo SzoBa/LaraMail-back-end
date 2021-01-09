@@ -40,7 +40,7 @@ class UserController extends Controller
         if(is_null($user)) {
             return response(['message'=>'User not found'], 404);
         }
-        return response(User::find($id), 200);
+        return response($user, 200);
     }
 
     /**
