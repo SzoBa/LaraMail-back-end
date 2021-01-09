@@ -3,6 +3,7 @@
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\RegisterUserController;
+use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,14 +21,18 @@ use Illuminate\Support\Facades\Hash;
 */
 
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
 //create database and migrations, create model (create service - Eloquent ORM), create controller for info retrieval, return info
+
+
 Route::apiResource('mail', MailController::class)
     ->middleware('auth:sanctum');
-//TODO insert force delete and list trashed mails, draft mails routes
+//TODO insert force delete and list trashed mails
+
+Route::get('/user/name/{id}', [UserController::class, 'show'])
+    ->middleware('auth:sanctum');
 
 Route::get('/mail-sent', [MailController::class, 'sent'])
     ->middleware('auth:sanctum');
