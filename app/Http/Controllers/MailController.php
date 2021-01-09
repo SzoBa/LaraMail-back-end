@@ -78,7 +78,8 @@ class MailController extends Controller
         if(is_null($mail)) {
             return response(['message'=>'Mail not found'], 404);
         }
-        return response(Mail::find($id), 200);
+//        $sender = User::query()->where('id', '=', $mail->id_user_from)->get('name');
+        return response($mail, 200);
     }
 
     /**
