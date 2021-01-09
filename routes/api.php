@@ -33,6 +33,8 @@ Route::apiResource('mail', MailController::class)
 Route::delete('/mail/force-delete/{id}',[MailController::class, 'forceDelete'])
     ->middleware('auth:sanctum');
 
+Route::get('/user/list', [UserController::class, 'index']);
+
 Route::get('/user/name/{id}', [UserController::class, 'show'])
     ->middleware('auth:sanctum');
 
