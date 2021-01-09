@@ -33,6 +33,7 @@ class MailController extends Controller
             ->select('mails.*', 'users.name')
             ->where('mails.id_user_to', '=', $request->user()->id)
             ->where('sent', '!=', null)
+            ->whereNull('deleted_at')
             ->get();
         return response($mails, 200);
     }
@@ -89,12 +90,13 @@ class MailController extends Controller
      * @param int $id
      * @return Response
      */
-    public function update(Request $request, int $id): ?Response
+    public function update(Request $request, int $id): Response
     {
-        $mail = Mail::find($id);
+        $mail = Mail::withTrashed()->find($id);
         if (is_null($mail)) {
             return response(["message" =>"Id doesn't exist in database!"], 404);
         }
+
         $rules = ['id_user_to' => 'exists:users,id',
             'subject' => 'string|min:3',
             'message' => 'string|min:3',
@@ -106,6 +108,10 @@ class MailController extends Controller
         if ($validation->fails()) {
             return response($validation->errors(), 400);
         }
+
+        array_key_exists('restore', $dataToUpdate) ?
+            $mail->restore() : null;
+
         $checkedUpdateValues = [];
         foreach ($dataToUpdate as $key=>$value) {
             if (array_key_exists($key, $rules)) {
@@ -113,6 +119,7 @@ class MailController extends Controller
                 $key === 'sent' ? $checkedUpdateValues[$key] = now(): $checkedUpdateValues[$key] = $value;
             }
         }
+
         $mail->update($checkedUpdateValues);
         return response(["message" => "Transaction successful!"], 204);
     }
@@ -129,6 +136,15 @@ class MailController extends Controller
         return $deletedRows === 0 ? response(["message"=>"No deletion executed!"], 404) :
             response(["message"=> "Record deleted!"], 204);
     }
+    //Together (2in1) better???
+    public function forceDelete (int $id) {
+        $mail = Mail::withTrashed()->find($id);
+        if (is_null($mail)) {
+            return response(["message" =>"Id doesn't exist in database!"], 404);
+        }
+        $mail->forceDelete();
+        return response(["message"=> "Record deleted!"], 204);
+    }
 
     public function sent(Request $request): Response
     {
@@ -138,6 +154,7 @@ class MailController extends Controller
         ->select('mails.*', 'users.name')
         ->where('mails.id_user_from', '=', $request->user()->id)
         ->where('sent', '!=', null)
+        ->whereNull('deleted_at')
         ->get();
         return response($mails, 200);
     }
@@ -147,7 +164,38 @@ class MailController extends Controller
             ->select('mails.*', 'users.name')
             ->where('mails.id_user_from', '=', $request->user()->id)
             ->where('sent', '=', null)
+            ->whereNull('deleted_at')
             ->get();
         return response($mails, 200);
     }
+
+    public function recycle(Request $request) {
+        $currentUsername = $request->user()->name;
+
+        $inboxMails = DB::table('mails')->join('users', 'mails.id_user_from', '=', 'users.id')
+            ->select('mails.*', 'users.name AS sender')
+            ->where('id_user_to', '=', $request->user()->id)
+            ->where('sent', '!=', null)
+            ->whereNotNull('deleted_at')
+            ->get();
+
+        foreach ($inboxMails as $mails) {
+            $mails->addressee = $currentUsername;
+        }
+
+        $sentAndDraftMails = DB::table('mails')->join('users', 'mails.id_user_to', '=', 'users.id')
+            ->select('mails.*', 'users.name AS addressee')
+            ->where('id_user_from', '=', $request->user()->id)
+            ->whereNotNull('deleted_at')
+            ->get();
+
+        foreach($sentAndDraftMails as $mails) {
+            $mails->sender = $currentUsername;
+        }
+
+        $mails = $inboxMails->merge($sentAndDraftMails);
+        return response($mails, 200);
+    }
+
+
 }
