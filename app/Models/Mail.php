@@ -20,9 +20,9 @@ class Mail extends Model
         'sent',
     ];
 
-//    protected $casts = [
-//        'sent' => 'datetime',
-//    ];
+    protected $casts = [
+        'is_read' => 'boolean',
+    ];
 //if you want to change the type of the returned value
 
     protected $attributes = ['is_read' => false];
