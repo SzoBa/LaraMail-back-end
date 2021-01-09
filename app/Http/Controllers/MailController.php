@@ -34,6 +34,7 @@ class MailController extends Controller
             ->where('mails.id_user_to', '=', $request->user()->id)
             ->where('sent', '!=', null)
             ->whereNull('deleted_at')
+            ->orderByDesc('created')
             ->get();
         return response($mails, 200);
     }
@@ -155,6 +156,7 @@ class MailController extends Controller
         ->where('mails.id_user_from', '=', $request->user()->id)
         ->where('sent', '!=', null)
         ->whereNull('deleted_at')
+        ->orderByDesc('created')
         ->get();
         return response($mails, 200);
     }
@@ -165,18 +167,21 @@ class MailController extends Controller
             ->where('mails.id_user_from', '=', $request->user()->id)
             ->where('sent', '=', null)
             ->whereNull('deleted_at')
+            ->orderByDesc('created')
             ->get();
         return response($mails, 200);
     }
 
     public function recycle(Request $request) {
         $currentUsername = $request->user()->name;
+        $currentUserId = $request->user()->id;
 
         $inboxMails = DB::table('mails')->join('users', 'mails.id_user_from', '=', 'users.id')
             ->select('mails.*', 'users.name AS sender')
-            ->where('id_user_to', '=', $request->user()->id)
+            ->where('id_user_to', '=', $currentUserId)
             ->where('sent', '!=', null)
             ->whereNotNull('deleted_at')
+            ->orderByDesc('created')
             ->get();
 
         foreach ($inboxMails as $mails) {
@@ -185,8 +190,10 @@ class MailController extends Controller
 
         $sentAndDraftMails = DB::table('mails')->join('users', 'mails.id_user_to', '=', 'users.id')
             ->select('mails.*', 'users.name AS addressee')
-            ->where('id_user_from', '=', $request->user()->id)
+            ->where('id_user_from', '=', $currentUserId)
+            ->where('id_user_to', '!=', $currentUserId)
             ->whereNotNull('deleted_at')
+            ->orderByDesc('created')
             ->get();
 
         foreach($sentAndDraftMails as $mails) {
