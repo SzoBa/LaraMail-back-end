@@ -41,6 +41,6 @@ class LoginController extends Controller
     public function destroy(Request $request): Response
     {
         $request->user()->currentAccessToken()->delete();
-        return response(["message" => "Logout successful"], 200);
+        return response(["message" => "Logout successful"], 204);
     }
 }
