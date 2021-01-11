@@ -16,7 +16,7 @@ class CreateMailsTable extends Migration
         Schema::create('mails', function (Blueprint $table) {
             $table->id('id');
             $table->foreignId('id_user_from')->nullable();
-            $table->foreignId('id_user_to')->nullable();
+            $table->foreignId('id_user_to')->nullable(); //constrained kell utánna, hogy mire
             $table->string('subject');
             $table->text('message');
             $table->boolean('is_read')->default(false);
