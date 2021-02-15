@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Validator;
 
 class MailController extends Controller
 {
-    /*There could be any kind of methods, named in the route.
-    */
-
 
     /**
      * Display a listing of the resource.
@@ -23,12 +20,6 @@ class MailController extends Controller
      */
     public function index(Request $request): Response
     {
-//        This is the way of multiple filtering with or
-//        $mails =  DB::table('mails')->where('id_user_from', $request->user()->id)
-//        ->orWhere('id_user_to', $request->user()->id)->get();
-//          or see example beneath
-//        $mails = Mail::all()
-//            ->where('id_user_to', $request->user()->id)->sortBy('sent');
         $mails = DB::table('mails')->join('users', 'mails.id_user_from', '=', 'users.id')
             ->select('mails.*', 'users.name')
             ->where('mails.id_user_to', '=', $request->user()->id)
@@ -45,7 +36,7 @@ class MailController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         $rules = ['name' =>'required',
             'subject' => 'required|min:3', 'message' => 'required|min:3'];
@@ -80,7 +71,6 @@ class MailController extends Controller
         if(is_null($mail)) {
             return response(['message'=>'Mail not found'], 404);
         }
-//        $sender = User::query()->where('id', '=', $mail->id_user_from)->get('name');
         return response($mail, 200);
     }
 
@@ -137,7 +127,7 @@ class MailController extends Controller
         return $deletedRows === 0 ? response(["message"=>"No deletion executed!"], 404) :
             response(["message"=> "Record deleted!"], 204);
     }
-    //Together (2in1) better???
+    
     public function forceDelete (int $id) {
         $mail = Mail::withTrashed()->find($id);
         if (is_null($mail)) {
@@ -149,8 +139,6 @@ class MailController extends Controller
 
     public function sent(Request $request): Response
     {
-//        Mail::all()->where('id_user_from', $request->user()->id)->sortByDesc('sent');
-//        $mails = Mail::with('user')->get();
         $mails = DB::table('mails')->join('users', 'mails.id_user_to', '=', 'users.id')
         ->select('mails.*', 'users.name')
         ->where('mails.id_user_from', '=', $request->user()->id)

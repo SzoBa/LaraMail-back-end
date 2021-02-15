@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 class LoginController extends Controller
 {
     /**
-     * Handle an incoming authentication request.
+     * Handle an incoming login request and creates token.
      *
      * @param Request $request
      * @return Response
@@ -33,7 +33,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Destroy an authenticated session.
+     * Deletes token.
      *
      * @param  Request  $request
      * @return Response
